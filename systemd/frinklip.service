@@ -1,0 +1,30 @@
+[Unit]
+Description=frinklip — local file drop server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=filedrop
+Group=filedrop
+ExecStart=/opt/frinklip/frinklip -config /etc/frinklip/frinklip.yaml
+Restart=always
+RestartSec=2
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+# hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=false
+ReadWritePaths=/tmp/dropped
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+
+[Install]
+WantedBy=multi-user.target

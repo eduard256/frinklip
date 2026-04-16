@@ -1,0 +1,5 @@
+api:
+  listen: ":80"
+
+upload:
+  dir: /tmp/dropped
