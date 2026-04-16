@@ -248,26 +248,44 @@ h1.title .accent svg.squiggle path {
 .output h3 .underline path {
   fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round;
 }
-.promptbox {
+.output .actions {
+  display: flex; justify-content: flex-end; margin-bottom: 12px;
+}
+.output .copy-all {
+  font-family: "Nunito", sans-serif; font-size: 13px; font-weight: 600;
+  color: var(--bg); background: var(--accent);
+  border: none; padding: 9px 16px; border-radius: 999px; cursor: pointer;
+  transition: transform 200ms var(--ease), background 200ms var(--ease);
+  box-shadow: 0 6px 14px -6px rgba(196,95,62,0.6);
+}
+.output .copy-all:hover { transform: translateY(-1px); background: #a84a2d; }
+.output .copy-all.ok { background: var(--ok); box-shadow: none; }
+
+.pathlist { display: grid; gap: 10px; }
+.pathblock {
   position: relative;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  padding: 22px 24px;
+  padding: 16px 120px 16px 20px;
   font-family: "JetBrains Mono", monospace; font-size: 14px;
-  color: var(--text); line-height: 1.7;
-  white-space: pre-wrap; word-break: break-all;
+  color: var(--text); line-height: 1.5;
+  word-break: break-all;
   box-shadow: var(--shadow-soft);
+  cursor: pointer;
+  transition: transform 200ms var(--ease), border-color 200ms var(--ease);
 }
-.promptbox .copy {
-  position: absolute; top: 14px; right: 14px;
-  font-family: "Nunito", sans-serif; font-size: 13px; font-weight: 600;
-  color: var(--bg); background: var(--accent);
-  border: none; padding: 8px 14px; border-radius: 999px; cursor: pointer;
-  transition: transform 200ms var(--ease), background 200ms var(--ease);
+.pathblock:hover { transform: translateY(-1px); border-color: var(--accent-soft); }
+.pathblock .btn {
+  position: absolute; top: 50%; right: 14px; transform: translateY(-50%);
+  font-family: "Nunito", sans-serif; font-size: 12px; font-weight: 600;
+  color: var(--accent); background: transparent;
+  border: 1px solid rgba(196,95,62,0.35);
+  padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  transition: background 200ms var(--ease), color 200ms var(--ease);
 }
-.promptbox .copy:hover { transform: translateY(-1px); background: #a84a2d; }
-.promptbox .copy.ok { background: var(--ok); }
+.pathblock .btn:hover { background: rgba(196,95,62,0.12); }
+.pathblock .btn.ok { background: var(--ok); color: var(--bg); border-color: var(--ok); }
 .toast {
   position: fixed; left: 50%; bottom: 32px; transform: translate(-50%, 20px);
   background: var(--text); color: var(--bg);
@@ -351,11 +369,11 @@ footer .heart { color: var(--accent); font-family: "Instrument Serif", serif; fo
     <span class="eyebrow"><span class="dot"></span> сервер работает · :80</span>
     <h1 class="title">
       Бросай сюда файлы,<br />
-      получай <span class="accent">промпт<svg class="squiggle" viewBox="0 0 260 18" aria-hidden="true">
+      получай <span class="accent">пути<svg class="squiggle" viewBox="0 0 260 18" aria-hidden="true">
         <path d="M2 12 C 40 2, 80 16, 130 8 S 220 4, 258 12" />
-      </svg></span> для ИИ.
+      </svg></span> одной кнопкой.
     </h1>
-    <p class="sub">Файлы падают в <span class="mono">/tmp/dropped/</span>, а я собираю строки, которые можно сразу вставить в диалог.</p>
+    <p class="sub">Файлы падают в <span class="mono">/tmp/dropped/</span>, а я отдаю абсолютный путь — каждый в своём блоке.</p>
   </header>
 
   <section class="dropwrap">
@@ -381,15 +399,15 @@ footer .heart { color: var(--accent); font-family: "Instrument Serif", serif; fo
   <section class="files" id="files" aria-live="polite"></section>
 
   <section class="output hidden" id="output">
-    <h3>Готовый промпт
+    <h3>Пути файлов
       <svg class="underline" viewBox="0 0 60 10" aria-hidden="true">
         <path d="M2 6 C 15 2, 30 10, 58 4" />
       </svg>
     </h3>
-    <div class="promptbox">
-      <button class="copy" id="copy-btn" type="button">Скопировать всё</button>
-      <div id="prompt-text"></div>
+    <div class="actions">
+      <button class="copy-all" id="copy-btn" type="button">Скопировать всё</button>
     </div>
+    <div class="pathlist" id="path-list"></div>
   </section>
 
   <section class="history" id="history-section">
@@ -411,10 +429,13 @@ footer .heart { color: var(--accent); font-family: "Instrument Serif", serif; fo
   const input      = document.getElementById('file-input');
   const filesEl    = document.getElementById('files');
   const outputEl   = document.getElementById('output');
-  const promptText = document.getElementById('prompt-text');
+  const pathList   = document.getElementById('path-list');
   const copyBtn    = document.getElementById('copy-btn');
   const toast      = document.getElementById('toast');
   const historyEl  = document.getElementById('history-list');
+
+  // paths collected from the latest upload — used by "Copy all"
+  let currentPaths = [];
 
   function fmtSize(n) {
     if (!n && n !== 0) return '';
@@ -532,15 +553,40 @@ footer .heart { color: var(--accent); font-family: "Instrument Serif", serif; fo
 
     if (!items.length) return;
 
-    const prompt = items.map(it => it.line).join('\n');
-    promptText.textContent = prompt;
+    currentPaths = items.map(it => it.path);
+    renderPaths(currentPaths);
     outputEl.classList.remove('hidden');
     outputEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-    const ok = await copyText(prompt);
-    if (ok) showToast('Промпт скопирован');
+    const ok = await copyText(currentPaths.join('\n'));
+    if (ok) showToast(items.length > 1 ? 'Пути скопированы' : 'Путь скопирован');
 
     loadHistory();
+  }
+
+  function renderPaths(paths) {
+    pathList.innerHTML = '';
+    for (const p of paths) {
+      const block = document.createElement('div');
+      block.className = 'pathblock';
+      block.innerHTML = `<span class="text"></span><button class="btn" type="button">Копировать</button>`;
+      block.querySelector('.text').textContent = p;
+
+      const btn = block.querySelector('.btn');
+      const copy = async (e) => {
+        if (e) { e.stopPropagation(); }
+        const ok = await copyText(p);
+        if (!ok) return;
+        btn.textContent = 'Готово'; btn.classList.add('ok');
+        showToast('Путь скопирован');
+        setTimeout(() => {
+          btn.textContent = 'Копировать'; btn.classList.remove('ok');
+        }, 1200);
+      };
+      btn.addEventListener('click', copy);
+      block.addEventListener('click', copy);
+      pathList.appendChild(block);
+    }
   }
 
   /* drag-n-drop events */
@@ -574,13 +620,14 @@ footer .heart { color: var(--accent); font-family: "Instrument Serif", serif; fo
     if (items && items.length) { e.preventDefault(); handleFiles(items); }
   });
 
-  /* copy-all button */
+  /* copy-all button — joins current paths with newlines */
   copyBtn.addEventListener('click', async () => {
-    const ok = await copyText(promptText.textContent);
+    if (!currentPaths.length) return;
+    const ok = await copyText(currentPaths.join('\n'));
     if (ok) {
       copyBtn.textContent = 'Готово';
       copyBtn.classList.add('ok');
-      showToast('Промпт скопирован');
+      showToast('Скопировано');
       setTimeout(() => {
         copyBtn.textContent = 'Скопировать всё';
         copyBtn.classList.remove('ok');
@@ -623,7 +670,7 @@ footer .heart { color: var(--accent); font-family: "Instrument Serif", serif; fo
       const btn = document.createElement('button');
       btn.type = 'button'; btn.className = 'mini'; btn.textContent = 'Копировать';
       btn.addEventListener('click', async () => {
-        const ok = await copyText(it.line);
+        const ok = await copyText(it.path);
         if (ok) { btn.textContent = 'Готово'; setTimeout(() => btn.textContent = 'Копировать', 1200); }
       });
       li.querySelector('.time').insertAdjacentElement('afterend', btn);

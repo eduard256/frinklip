@@ -23,12 +23,9 @@ func IsImage(path string) bool {
 	return false
 }
 
-// Line returns a single prompt line for one path
+// Line returns a single prompt line for one path — just the path itself
 func Line(path string) string {
-	if IsImage(path) {
-		return "Прочитай изображение " + path
-	}
-	return "Посмотри файл " + path
+	return path
 }
 
 // Build returns newline-joined prompt for a list of absolute paths

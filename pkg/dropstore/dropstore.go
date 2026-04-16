@@ -63,7 +63,9 @@ func (s *Store) Save(name string, r io.Reader) (string, error) {
 	return path, nil
 }
 
-// SafeName strips path separators and control chars from a user-provided name
+// SafeName strips path separators, control chars, and whitespace from a
+// user-provided name. Whitespace is replaced with underscore so the final
+// /tmp path never contains spaces — easier to paste into shells and prompts.
 func SafeName(name string) string {
 	// take basename only — multipart can legally include directories
 	if i := strings.LastIndexAny(name, `/\`); i >= 0 {
@@ -71,10 +73,14 @@ func SafeName(name string) string {
 	}
 	name = strings.TrimSpace(name)
 
-	// replace path traversal and control bytes
+	// replace whitespace with "_", drop other control bytes
 	b := make([]byte, 0, len(name))
 	for i := 0; i < len(name); i++ {
 		ch := name[i]
+		if ch == ' ' || ch == '\t' {
+			b = append(b, '_')
+			continue
+		}
 		if ch < 0x20 || ch == 0x7f {
 			continue
 		}
@@ -82,7 +88,6 @@ func SafeName(name string) string {
 	}
 	name = string(b)
 
-	// collapse leading dots (".htaccess" is still fine, but "..." -> "_")
 	if name == "" || name == "." || name == ".." || strings.Trim(name, ".") == "" {
 		return ""
 	}

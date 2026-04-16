@@ -27,7 +27,7 @@ func TestIsImage(t *testing.T) {
 
 func TestBuild(t *testing.T) {
 	got := Build([]string{"/tmp/a.pdf", "/tmp/b.jpg"})
-	want := "Посмотри файл /tmp/a.pdf\nПрочитай изображение /tmp/b.jpg"
+	want := "/tmp/a.pdf\n/tmp/b.jpg"
 	if got != want {
 		t.Errorf("Build mismatch:\ngot:  %q\nwant: %q", got, want)
 	}
