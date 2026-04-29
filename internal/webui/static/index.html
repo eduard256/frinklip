@@ -1,13 +1,270 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>frinklip — бросай файлы</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<title>frinklip — drop files, paste paths into your AI</title>
 <style>
+/* ---------------------------------------------------------------------------
+ * Self-hosted webfonts (woff2). Files live in ./fonts/ and are embedded into
+ * the binary together with the rest of the static assets. No third-party
+ * network requests at runtime — frinklip works fully offline.
+ * ------------------------------------------------------------------------- */
+
+/* Instrument Serif — display headings (regular + italic) */
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/instrumentserif-400-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/instrumentserif-400-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/instrumentserif-400-normal-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/instrumentserif-400-normal-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* JetBrains Mono — code/path snippets (weights 400, 500) */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/jetbrainsmono-400-normal-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/jetbrainsmono-400-normal-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/jetbrainsmono-400-normal-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/jetbrainsmono-400-normal-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/jetbrainsmono-400-normal-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/jetbrainsmono-400-normal-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('fonts/jetbrainsmono-500-normal-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('fonts/jetbrainsmono-500-normal-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('fonts/jetbrainsmono-500-normal-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('fonts/jetbrainsmono-500-normal-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('fonts/jetbrainsmono-500-normal-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('fonts/jetbrainsmono-500-normal-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Nunito — body UI text (weights 500, 600, 700) */
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('fonts/nunito-500-normal-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('fonts/nunito-500-normal-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('fonts/nunito-500-normal-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('fonts/nunito-500-normal-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('fonts/nunito-500-normal-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('fonts/nunito-600-normal-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('fonts/nunito-600-normal-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('fonts/nunito-600-normal-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('fonts/nunito-600-normal-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('fonts/nunito-600-normal-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('fonts/nunito-700-normal-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('fonts/nunito-700-normal-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('fonts/nunito-700-normal-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('fonts/nunito-700-normal-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('fonts/nunito-700-normal-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 :root {
   --bg: #f5efe6;
   --card: #e8ddc9;
@@ -85,19 +342,6 @@ body {
         padding: clamp(24px, 5vw, 64px) clamp(20px, 4vw, 48px) 120px; }
 
 header.hero { margin-bottom: clamp(28px, 5vw, 56px); }
-.eyebrow {
-  display: inline-flex; align-items: center; gap: 10px;
-  font-family: "JetBrains Mono", monospace; font-size: 12px;
-  letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--muted);
-  padding: 6px 12px; border-radius: 999px;
-  background: rgba(255,255,255,0.45);
-  border: 1px solid var(--line);
-}
-.eyebrow .dot { width: 8px; height: 8px; border-radius: 50%;
-                background: var(--ok); box-shadow: 0 0 0 4px rgba(107,143,78,0.18);
-                animation: pulse 2.4s ease-in-out infinite; }
-@keyframes pulse { 50% { box-shadow: 0 0 0 8px rgba(107,143,78,0.08); } }
 
 h1.title {
   font-family: "Instrument Serif", "Times New Roman", serif;
@@ -191,48 +435,19 @@ h1.title .accent svg.squiggle path {
 .drop .leaf.l2 { bottom: 18px; right: 22px; transform: rotate(152deg); }
 .drop .leaf path { fill: none; stroke: var(--accent); stroke-width: 1.4; stroke-linecap: round; }
 
-/* files list */
-.files { margin-top: clamp(28px, 4vw, 44px); display: grid; gap: 12px; }
-.file {
-  display: grid; grid-template-columns: auto 1fr auto;
-  gap: 14px; align-items: center;
-  padding: 14px 18px; border-radius: var(--radius-md);
-  background: rgba(255,255,255,0.55);
-  border: 1px solid var(--line);
-  opacity: 0; transform: translateY(10px);
-  animation: slidein 420ms var(--ease) forwards;
+/* drop-zone busy state — replaces the per-file progress list */
+.drop.busy { cursor: progress; pointer-events: none; }
+.drop.busy::before { border-color: var(--accent); border-style: solid; }
+.drop .busy-line {
+  display: none;
+  margin-top: 14px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: 0.04em;
 }
-@keyframes slidein { to { opacity: 1; transform: translateY(0); } }
-
-.file .tag {
-  font-family: "JetBrains Mono", monospace; font-size: 11px;
-  font-weight: 500; letter-spacing: 0.08em;
-  padding: 5px 9px; border-radius: 6px;
-  background: var(--card); color: var(--muted);
-  border: 1px solid var(--line); text-transform: uppercase;
-}
-.file.is-image .tag { background: rgba(196,95,62,0.12); color: var(--accent);
-                      border-color: rgba(196,95,62,0.35); }
-.file .body { min-width: 0; }
-.file .name { font-weight: 600; font-size: 15px; color: var(--text);
-              white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.file .path { font-family: "JetBrains Mono", monospace; font-size: 12px;
-              color: var(--muted); margin-top: 2px;
-              white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.file .size { font-family: "JetBrains Mono", monospace; font-size: 12px;
-              color: var(--muted); white-space: nowrap; }
-
-.file .progress {
-  grid-column: 1 / -1; height: 4px; margin-top: 4px;
-  background: var(--line); border-radius: 2px; overflow: hidden; position: relative;
-}
-.file .progress::after {
-  content: ""; position: absolute; inset: 0;
-  background: linear-gradient(90deg, var(--accent-soft), var(--accent));
-  width: var(--p, 0%); transition: width 220ms linear;
-}
-.file.done .progress { display: none; }
-.file.error { border-color: #c44646; background: rgba(196,70,70,0.08); }
+.drop.busy .busy-line { display: block; }
+.drop.busy .hint { opacity: 0.35; }
 
 /* prompt output */
 .output { margin-top: clamp(28px, 4vw, 44px); position: relative; }
@@ -344,8 +559,6 @@ footer .heart { color: var(--accent); font-family: "Instrument Serif", serif; fo
 /* small screens */
 @media (max-width: 640px) {
   .dropwrap .arrow { display: none; }
-  .file { grid-template-columns: auto 1fr; }
-  .file .size { grid-column: 2 / -1; }
 }
 
 /* motion off */
@@ -366,14 +579,13 @@ footer .heart { color: var(--accent); font-family: "Instrument Serif", serif; fo
 
 <main class="wrap">
   <header class="hero">
-    <span class="eyebrow"><span class="dot"></span> сервер работает · :80</span>
     <h1 class="title">
-      Бросай сюда файлы,<br />
-      получай <span class="accent">пути<svg class="squiggle" viewBox="0 0 260 18" aria-hidden="true">
+      Drop files,<br />
+      get <span class="accent">paths<svg class="squiggle" viewBox="0 0 260 18" aria-hidden="true">
         <path d="M2 12 C 40 2, 80 16, 130 8 S 220 4, 258 12" />
-      </svg></span> одной кнопкой.
+      </svg></span> your agent can read.
     </h1>
-    <p class="sub">Файлы падают в <span class="mono">/tmp/dropped/</span>, а я отдаю абсолютный путь — каждый в своём блоке.</p>
+    <p class="sub">For <span class="mono">claude-code</span>, <span class="mono">opencode</span>, <span class="mono">codex</span> &amp; friends — files land in <span class="mono">/tmp/dropped/</span>, you paste the path, the model reads the file.</p>
   </header>
 
   <section class="dropwrap">
@@ -382,52 +594,51 @@ footer .heart { color: var(--accent); font-family: "Instrument Serif", serif; fo
       <path d="M120 90 L 108 82 M120 90 L 112 102" />
     </svg>
 
-    <div class="drop" id="drop" tabindex="0" role="button" aria-label="Область для перетаскивания файлов">
+    <div class="drop" id="drop" tabindex="0" role="button" aria-label="Drop files here to upload">
       <svg class="leaf l1" viewBox="0 0 48 48" aria-hidden="true">
         <path d="M8 40 C 16 16, 34 10, 42 8 C 40 24, 30 38, 8 40 Z M8 40 C 16 34, 26 28, 38 14" />
       </svg>
       <svg class="leaf l2" viewBox="0 0 48 48" aria-hidden="true">
         <path d="M8 40 C 16 16, 34 10, 42 8 C 40 24, 30 38, 8 40 Z M8 40 C 16 34, 26 28, 38 14" />
       </svg>
-      <h2>Перетащи файлы сюда</h2>
-      <p class="hint">Или нажми, чтобы выбрать. Можно много сразу.
-        <br /><kbd>Ctrl</kbd>+<kbd>V</kbd> тоже работает.</p>
+      <h2>Drop files here</h2>
+      <p class="hint">Or click to pick. Batch is fine — pipe the whole folder if you want.
+        <br /><kbd>Ctrl</kbd>+<kbd>V</kbd> works too.</p>
+      <p class="busy-line" id="busy-line">uploading…</p>
       <input type="file" id="file-input" multiple hidden />
     </div>
   </section>
 
-  <section class="files" id="files" aria-live="polite"></section>
-
   <section class="output hidden" id="output">
-    <h3>Пути файлов
+    <h3>paste-ready paths
       <svg class="underline" viewBox="0 0 60 10" aria-hidden="true">
         <path d="M2 6 C 15 2, 30 10, 58 4" />
       </svg>
     </h3>
     <div class="actions">
-      <button class="copy-all" id="copy-btn" type="button">Скопировать всё</button>
+      <button class="copy-all" id="copy-btn" type="button">copy all</button>
     </div>
     <div class="pathlist" id="path-list"></div>
   </section>
 
   <section class="history" id="history-section">
-    <h3>Последние загрузки</h3>
-    <p class="hint">Сессия сервера. Сбрасывается при перезапуске.</p>
+    <h3>recent drops</h3>
+    <p class="hint">Server session — kept in RAM, gone on restart. Like <code>/tmp</code> but vibe-curated.</p>
     <ul id="history-list"></ul>
   </section>
 
   <footer>
-    <p>frinklip <span class="heart">·</span> локальный файлодроп</p>
+    <p>frinklip <span class="heart">·</span> a local filedrop for the cli-agent crowd</p>
   </footer>
 </main>
 
-<div class="toast" id="toast">Скопировано</div>
+<div class="toast" id="toast">copied</div>
 
 <script>
 (() => {
   const drop       = document.getElementById('drop');
   const input      = document.getElementById('file-input');
-  const filesEl    = document.getElementById('files');
+  const busyLine   = document.getElementById('busy-line');
   const outputEl   = document.getElementById('output');
   const pathList   = document.getElementById('path-list');
   const copyBtn    = document.getElementById('copy-btn');
@@ -456,6 +667,12 @@ footer .heart { color: var(--accent); font-family: "Instrument Serif", serif; fo
     return i >= 0 ? name.slice(i + 1).toUpperCase() : 'FILE';
   }
 
+  // Busy-line text shown under the drop zone while uploads are in flight.
+  // Trivial English plural — no slavic mod-10/mod-100 dance needed.
+  function uploadingLine(n) {
+    return n === 1 ? 'uploading 1 file…' : `uploading ${n} files…`;
+  }
+
   function isImageName(name) {
     return /\.(jpe?g|png|gif|webp|bmp|svg)$/i.test(name);
   }
@@ -481,61 +698,25 @@ footer .heart { color: var(--accent); font-family: "Instrument Serif", serif; fo
     }
   }
 
-  /* file row with progress */
-  function makeRow(file) {
-    const row = document.createElement('div');
-    row.className = 'file' + (isImageName(file.name) ? ' is-image' : '');
-    row.innerHTML = `
-      <span class="tag">${isImageName(file.name) ? 'IMG' : extOf(file.name)}</span>
-      <div class="body">
-        <div class="name"></div>
-        <div class="path">…</div>
-      </div>
-      <div class="size">${fmtSize(file.size)}</div>
-      <div class="progress"></div>
-    `;
-    row.querySelector('.name').textContent = file.name;
-    filesEl.appendChild(row);
-    return row;
-  }
-
-  /* single-file upload with progress */
-  function uploadOne(file, row) {
+  /* single-file upload — no per-file UI, only the global busy state */
+  function uploadOne(file) {
     return new Promise((resolve) => {
       const fd = new FormData();
       fd.append('files', file);
 
       const xhr = new XMLHttpRequest();
       xhr.open('POST', '/api/upload');
-
-      xhr.upload.onprogress = (e) => {
-        if (!e.lengthComputable) return;
-        const p = Math.round((e.loaded / e.total) * 100);
-        row.querySelector('.progress').style.setProperty('--p', p + '%');
-      };
-
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
             const data = JSON.parse(xhr.responseText);
             const item = (data.files && data.files[0]) || null;
-            if (item) {
-              row.classList.add('done');
-              row.querySelector('.path').textContent = item.path;
-              resolve({ ok: true, item });
-              return;
-            }
+            if (item) { resolve({ ok: true, item }); return; }
           } catch {}
         }
-        row.classList.add('error');
-        row.querySelector('.path').textContent = 'не удалось загрузить';
         resolve({ ok: false });
       };
-      xhr.onerror = () => {
-        row.classList.add('error');
-        row.querySelector('.path').textContent = 'ошибка сети';
-        resolve({ ok: false });
-      };
+      xhr.onerror = () => resolve({ ok: false });
       xhr.send(fd);
     });
   }
@@ -544,14 +725,23 @@ footer .heart { color: var(--accent); font-family: "Instrument Serif", serif; fo
     const files = Array.from(fileList || []);
     if (!files.length) return;
 
-    const rows  = files.map(makeRow);
+    drop.classList.add('busy');
+    busyLine.textContent = uploadingLine(files.length);
+
     const items = [];
-    for (let i = 0; i < files.length; i++) {
-      const res = await uploadOne(files[i], rows[i]);
-      if (res.ok) items.push(res.item);
+    let failed = 0;
+    for (const f of files) {
+      const res = await uploadOne(f);
+      if (res.ok) items.push(res.item); else failed++;
     }
 
-    if (!items.length) return;
+    drop.classList.remove('busy');
+
+    if (!items.length) {
+      showToast('upload failed');
+      return;
+    }
+    if (failed) showToast(`uploaded ${items.length} / ${files.length}`);
 
     currentPaths = items.map(it => it.path);
     renderPaths(currentPaths);
@@ -559,7 +749,7 @@ footer .heart { color: var(--accent); font-family: "Instrument Serif", serif; fo
     outputEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
     const ok = await copyText(currentPaths.join('\n'));
-    if (ok) showToast(items.length > 1 ? 'Пути скопированы' : 'Путь скопирован');
+    if (ok && !failed) showToast(items.length > 1 ? 'paths copied — paste away' : 'path copied — paste away');
 
     loadHistory();
   }
@@ -569,7 +759,7 @@ footer .heart { color: var(--accent); font-family: "Instrument Serif", serif; fo
     for (const p of paths) {
       const block = document.createElement('div');
       block.className = 'pathblock';
-      block.innerHTML = `<span class="text"></span><button class="btn" type="button">Копировать</button>`;
+      block.innerHTML = `<span class="text"></span><button class="btn" type="button">copy</button>`;
       block.querySelector('.text').textContent = p;
 
       const btn = block.querySelector('.btn');
@@ -577,10 +767,10 @@ footer .heart { color: var(--accent); font-family: "Instrument Serif", serif; fo
         if (e) { e.stopPropagation(); }
         const ok = await copyText(p);
         if (!ok) return;
-        btn.textContent = 'Готово'; btn.classList.add('ok');
-        showToast('Путь скопирован');
+        btn.textContent = 'copied'; btn.classList.add('ok');
+        showToast('path copied');
         setTimeout(() => {
-          btn.textContent = 'Копировать'; btn.classList.remove('ok');
+          btn.textContent = 'copy'; btn.classList.remove('ok');
         }, 1200);
       };
       btn.addEventListener('click', copy);
@@ -625,11 +815,11 @@ footer .heart { color: var(--accent); font-family: "Instrument Serif", serif; fo
     if (!currentPaths.length) return;
     const ok = await copyText(currentPaths.join('\n'));
     if (ok) {
-      copyBtn.textContent = 'Готово';
+      copyBtn.textContent = 'copied';
       copyBtn.classList.add('ok');
-      showToast('Скопировано');
+      showToast('copied');
       setTimeout(() => {
-        copyBtn.textContent = 'Скопировать всё';
+        copyBtn.textContent = 'copy all';
         copyBtn.classList.remove('ok');
       }, 1400);
     }
@@ -654,7 +844,7 @@ footer .heart { color: var(--accent); font-family: "Instrument Serif", serif; fo
     historyEl.innerHTML = '';
     if (!list.length) {
       const li = document.createElement('li');
-      li.innerHTML = '<span class="tag">···</span><span class="path">пока пусто</span><span class="time"></span>';
+      li.innerHTML = '<span class="tag">···</span><span class="path">nothing dropped yet — your move</span><span class="time"></span>';
       li.classList.add('reveal');
       historyEl.appendChild(li);
       return;
@@ -668,10 +858,10 @@ footer .heart { color: var(--accent); font-family: "Instrument Serif", serif; fo
         <span class="time">${fmtTime(it.ts)}</span>
       `;
       const btn = document.createElement('button');
-      btn.type = 'button'; btn.className = 'mini'; btn.textContent = 'Копировать';
+      btn.type = 'button'; btn.className = 'mini'; btn.textContent = 'copy';
       btn.addEventListener('click', async () => {
         const ok = await copyText(it.path);
-        if (ok) { btn.textContent = 'Готово'; setTimeout(() => btn.textContent = 'Копировать', 1200); }
+        if (ok) { btn.textContent = 'copied'; setTimeout(() => btn.textContent = 'copy', 1200); }
       });
       li.querySelector('.time').insertAdjacentElement('afterend', btn);
       historyEl.appendChild(li);
