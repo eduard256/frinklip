@@ -53,18 +53,29 @@ die()  { printf '%s xx %s %s\n' "${C_RED}" "${C_RESET}" "$*" >&2; exit 1; }
 
 # ---------- privilege escalation ----------
 
-# Resolve a sudo command we can re-use throughout. If we're root, no sudo
-# needed; otherwise pick `sudo` and let it prompt now (interactively or
-# from a cached credential) so subsequent calls don't block silently.
+# Resolve a sudo command we can re-use throughout.
+#
+# Three cases:
+#   1. We're root — no sudo prefix needed.
+#   2. We're a user with a real TTY (/dev/tty available) — use sudo and
+#      let it prompt for a password the first time. We pre-warm the
+#      credential cache via `sudo -v` so later calls don't block.
+#   3. We're piped from `curl | bash` (no TTY for stdin) — sudo can't
+#      prompt for a password; tell the user to re-run as `curl | sudo bash`.
 SUDO=""
 if [ "$(id -u)" -ne 0 ]; then
-    if command -v sudo >/dev/null 2>&1; then
-        SUDO="sudo"
-        # Touch the credential cache early so later non-interactive sudo
-        # calls don't block waiting for a password.
-        $SUDO -v || die "this script needs sudo privileges"
-    else
-        die "this script needs root privileges and sudo is not installed"
+    command -v sudo >/dev/null 2>&1 \
+        || die "this script needs root privileges and sudo is not installed"
+    SUDO="sudo"
+
+    # If sudo can run without a password (cached or NOPASSWD), great.
+    # Otherwise we need an interactive terminal for the prompt.
+    if ! sudo -n true 2>/dev/null; then
+        if [ -t 0 ] || [ -r /dev/tty ]; then
+            sudo -v || die "this script needs sudo privileges"
+        else
+            die "no terminal for sudo password prompt — re-run as: curl -fsSL https://raw.githubusercontent.com/${REPO}/main/install.sh | sudo bash"
+        fi
     fi
 fi
 
@@ -222,7 +233,10 @@ WantedBy=multi-user.target
 EOF
 
     $SUDO systemctl daemon-reload
-    $SUDO systemctl enable --now frinklip
+    $SUDO systemctl enable frinklip >/dev/null 2>&1 || true
+    # Use restart (not start/enable --now) so that an already-running service
+    # picks up the new binary and config on upgrade.
+    $SUDO systemctl restart frinklip
     ok "systemd service enabled and started"
 }
 
@@ -285,10 +299,12 @@ main() {
         upgrading="true"
     fi
 
-    # Download binary + checksums into a temp dir.
-    local tmp
-    tmp="$(mktemp -d)"
-    trap 'rm -rf "$tmp"' EXIT
+    # Download binary + checksums into a temp dir. Use a global name so the
+    # EXIT trap below (which runs after main() returns) can still see the
+    # variable under `set -u`.
+    TMPDIR_FRINKLIP="$(mktemp -d)"
+    trap 'rm -rf "${TMPDIR_FRINKLIP:-}"' EXIT
+    local tmp="$TMPDIR_FRINKLIP"
 
     local base_url="https://github.com/${REPO}/releases/latest/download"
     local asset="${BIN_NAME}-${platform}"
@@ -330,11 +346,12 @@ main() {
         darwin) install_launchd_service ;;
     esac
 
-    # Health check: hit /  via curl with a few retries — service may need a
-    # moment to bind the port after launchctl/systemctl reports success.
+    # Health check: poll the root URL until it answers or we give up. The
+    # service may need a moment after launchctl/systemctl reports success
+    # (especially on low-power boxes). 30 attempts × 0.5s = 15s budget.
     log "waiting for the service to come up"
     local up="false" i
-    for i in 1 2 3 4 5 6 7 8 9 10; do
+    for i in $(seq 1 30); do
         if curl -fsS -o /dev/null --max-time 1 "http://127.0.0.1:${PORT}/" 2>/dev/null; then
             up="true"
             break
@@ -344,7 +361,7 @@ main() {
     if [ "$up" = "true" ]; then
         ok "service is responding on port ${PORT}"
     else
-        warn "service did not respond within 5 seconds — check logs:"
+        warn "service did not respond within 15 seconds — check logs:"
         if [ "$os" = "linux" ]; then
             warn "  journalctl -u frinklip -n 50"
         else
