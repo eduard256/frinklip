@@ -4,6 +4,19 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>frinklip — drop files, paste paths into your AI</title>
+
+<!-- PWA + favicons. All icons are self-hosted under /icons/, embedded
+     into the binary alongside the rest of the static FS. -->
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="theme-color" content="#c45f3e" />
+<link rel="icon" href="/icons/favicon.ico" sizes="any" />
+<link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+<link rel="icon" type="image/png" sizes="32x32"  href="/icons/icon-32.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+<link rel="apple-touch-icon" href="/icons/icon-180.png" />
+<meta name="apple-mobile-web-app-title" content="frinklip" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <style>
 /* ---------------------------------------------------------------------------
  * Self-hosted webfonts (woff2). Files live in ./fonts/ and are embedded into

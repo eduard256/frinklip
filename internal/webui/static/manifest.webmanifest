@@ -1,0 +1,15 @@
+{
+  "name": "frinklip",
+  "short_name": "frinklip",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5efe6",
+  "theme_color": "#c45f3e",
+  "icons": [
+    { "src": "/icons/icon-192.png",  "type": "image/png", "sizes": "192x192", "purpose": "any" },
+    { "src": "/icons/icon-256.png",  "type": "image/png", "sizes": "256x256", "purpose": "any" },
+    { "src": "/icons/icon-512.png",  "type": "image/png", "sizes": "512x512", "purpose": "any" },
+    { "src": "/icons/icon-1024.png", "type": "image/png", "sizes": "1024x1024", "purpose": "any" }
+  ]
+}
