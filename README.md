@@ -24,8 +24,6 @@ Works for anything the agent's tools can read: images for vision, PDFs for parsi
 curl -fsSL https://raw.githubusercontent.com/eduard256/frinklip/main/install.sh | sudo bash
 ```
 
-Installs the binary to `/usr/local/bin/frinklip`, creates the `filedrop` system user, drops a systemd unit, starts the service. Listens on `0.0.0.0:3467`.
-
 Open `http://<lan-ip>:3467` from any device on the network.
 
 ## Manual install
