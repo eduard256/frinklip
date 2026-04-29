@@ -394,4 +394,10 @@ main() {
     echo
 }
 
+# Wrap main in a subshell-style invocation and exit explicitly. When the
+# script is consumed via `curl | bash`, bash keeps reading stdin after the
+# last line of source — without an explicit exit it can interpret leftover
+# bytes from the pipe as another command, producing confusing errors like
+# "tmp: unbound variable" right at the end of an otherwise successful run.
 main "$@"
+exit 0
