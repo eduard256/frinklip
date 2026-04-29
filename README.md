@@ -31,6 +31,32 @@ curl -fsSL https://raw.githubusercontent.com/eduard256/frinklip/main/install.sh 
 
 Open `http://<lan-ip>:3467` from any device on the network.
 
+## Install as a PWA (recommended)
+
+A PWA is a website that runs as a standalone desktop app — own window, own dock/taskbar icon, no browser chrome. frinklip ships with a manifest, so any modern browser can install it in two clicks. You'll get a real "frinklip" icon next to your other apps and won't have to type the IP every time.
+
+**macOS — Chrome / Edge / Brave:**
+
+1. Open `http://<lan-ip>:3467`
+2. Click the install icon ⊕ on the right side of the address bar (or menu → *Cast, save and share* → *Install page as app…*)
+3. Confirm. The app appears in `/Applications` and Launchpad.
+
+**macOS — Safari (16+):**
+
+1. Open `http://<lan-ip>:3467`
+2. *File* → *Add to Dock…*
+3. Confirm. The app lands in `/Applications`.
+
+**Windows — Chrome / Edge:**
+
+1. Open `http://<lan-ip>:3467`
+2. Click the install icon ⊕ in the address bar (Edge: *…* → *Apps* → *Install this site as an app*)
+3. Confirm. The app gets a Start menu entry and a desktop shortcut.
+
+**iOS / Android:**
+
+Open the URL → share menu → *Add to Home Screen*.
+
 ## Manual install
 
 Don't want to pipe a script into shell? See [INSTALL.md](INSTALL.md).
