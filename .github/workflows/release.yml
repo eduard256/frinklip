@@ -1,0 +1,39 @@
+# Release workflow.
+# Fires only when a tag matching v* is pushed (e.g. `git push origin v0.0.1`).
+# No build runs on regular pushes or pull requests — releases are an
+# explicit, manual action by tagging.
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  # Required for goreleaser to create the GitHub Release and upload assets.
+  contents: write
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # GoReleaser needs full history to compute the previous tag, etc.
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

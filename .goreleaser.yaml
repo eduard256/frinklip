@@ -1,0 +1,65 @@
+# GoReleaser configuration for frinklip.
+# Triggered by .github/workflows/release.yml on push of a tag matching v*.
+# Produces bare per-platform binaries (no archives) and a checksums file.
+#
+# Run locally for sanity-checking without publishing:
+#   goreleaser release --snapshot --clean
+
+version: 2
+
+project_name: frinklip
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: frinklip
+    main: ./cmd/frinklip
+    binary: frinklip
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X main.Version={{.Version}}
+      - -X main.Commit={{.ShortCommit}}
+      - -X main.Date={{.Date}}
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+
+# Bare binaries instead of tar.gz/zip archives.
+# Each artifact is uploaded as `frinklip-<os>-<arch>` so install scripts can
+# fetch a known URL like:
+#   https://github.com/eduard256/frinklip/releases/latest/download/frinklip-linux-amd64
+archives:
+  - id: bare
+    formats: [binary]
+    name_template: "frinklip-{{ .Os }}-{{ .Arch }}"
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+# Disable the auto-generated changelog. Release notes are written by hand
+# in the GitHub UI (or via `gh release edit`) after publication.
+changelog:
+  disable: true
+
+release:
+  github:
+    owner: eduard256
+    name: frinklip
+  # Mark as draft so we can review and write release notes before going public.
+  draft: true
+  # Releases for tags like v0.0.1 are flagged as prerelease automatically
+  # (anything below v1.0.0 is considered unstable by convention).
+  prerelease: auto
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
