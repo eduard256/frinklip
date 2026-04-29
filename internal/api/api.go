@@ -18,7 +18,7 @@ var (
 	paths = map[string]bool{}
 )
 
-// Init reads api.listen (default :80), starts http server in a goroutine.
+// Init reads api.listen (default :3467), starts http server in a goroutine.
 // Handlers are registered by other modules via api.HandleFunc before or after Init.
 func Init() {
 	var conf struct {
@@ -27,7 +27,7 @@ func Init() {
 		} `yaml:"api"`
 	}
 
-	conf.Mod.Listen = ":80"
+	conf.Mod.Listen = ":3467"
 
 	app.LoadConfig(&conf)
 	log = app.GetLogger("api")

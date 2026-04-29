@@ -16,8 +16,8 @@ Local LAN drag-and-drop file server. Drop any files into the browser — they la
 - Manual "Copy all" button
 - Session history of recent uploads
 - Image detection (jpg, png, gif, webp, bmp, svg) uses the "Прочитай изображение" prefix
-- Runs on :80 across the whole LAN (bind `0.0.0.0`)
-- systemd unit for autostart, runs as a dedicated unprivileged user with `CAP_NET_BIND_SERVICE`
+- Runs on :3467 across the whole LAN (bind `0.0.0.0`)
+- systemd unit for autostart, runs as a dedicated unprivileged user
 
 ## Install
 
@@ -27,9 +27,9 @@ cd frinklip
 make install
 ```
 
-The `make install` target builds the binary, creates the `filedrop` system user, installs the systemd unit, grants `CAP_NET_BIND_SERVICE` so the binary can bind port 80 without root, and enables+starts the service.
+The `make install` target builds the binary, creates the `filedrop` system user, installs the systemd unit, and enables+starts the service.
 
-After install open `http://<machine-ip>/` from any device in the LAN.
+After install open `http://<machine-ip>:3467/` from any device in the LAN.
 
 ## Manual steps
 
@@ -37,7 +37,6 @@ If you want to run without systemd:
 
 ```bash
 go build -o frinklip ./cmd/frinklip
-sudo setcap 'cap_net_bind_service=+ep' ./frinklip
 ./frinklip
 ```
 

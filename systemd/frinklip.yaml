@@ -1,5 +1,5 @@
 api:
-  listen: ":80"
+  listen: ":3467"
 
 upload:
   dir: /tmp/dropped
