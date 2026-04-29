@@ -1,4 +1,15 @@
-# frinklip
+<h1 align="center">
+  <a href="https://github.com/eduard256/frinklip">
+    <img src="https://raw.githubusercontent.com/eduard256/frinklip/main/internal/webui/static/icons/icon-192.png" width="64" alt="frinklip" valign="middle">
+  </a>
+  &nbsp;|&nbsp;
+  FRINKLIP
+</h1>
+<p align="center">
+  <a href="https://github.com/eduard256/frinklip/stargazers"><img src="https://img.shields.io/github/stars/eduard256/frinklip?style=flat-square&logo=github" alt="GitHub Stars"></a>
+  <a href="https://github.com/eduard256/frinklip/releases"><img src="https://img.shields.io/github/downloads/eduard256/frinklip/total?color=blue&style=flat-square&logo=github" alt="GitHub Downloads"></a>
+  <a href="https://github.com/eduard256/frinklip/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="License"></a>
+</p>
 
 Local file drop server. Drag files into the browser, get absolute paths, paste into your CLI agent.
 
