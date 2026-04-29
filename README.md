@@ -7,6 +7,10 @@ Local LAN drag-and-drop file server. Drop any files into the browser — they la
 Прочитай изображение /tmp/dropped/1713254401_photo.jpg
 ```
 
+![Drop files, get paths your agent can read](docs/screenshots/hero.webp)
+
+![Paste-ready paths and recent drops](docs/screenshots/paths.webp)
+
 ## Features
 
 - Single Go binary, zero runtime dependencies
